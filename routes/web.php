@@ -35,6 +35,8 @@ Route::get('/change-avatar', [UserController::class , "showAvatarForm"])
 Route::post('/change-avatar', [UserController::class , "storeAvatar"])
 ->middleware('mustBeLoggedIn');
 
+
+
 Route::post('/create-follow/{user:username}', [FollowController::class , 'createFollow'])->middleware('mustBeLoggedIn');
 Route::post('/remove-follow/{user:username}', [FollowController::class , 'removeFollow'])->middleware('mustBeLoggedIn');
 
@@ -46,6 +48,7 @@ Route::delete('/post/{post}', [PostController::class , "delete"])
 Route::get('/post/{post}/edit', [PostController::class , "showEditForm"])->middleware('can:update,post');
 Route::put('/post/{post}', [PostController::class , "updatePost"])
 ->middleware('can:update,post');
+Route::get('/search/{term}' , [PostController::class , "search"] );
 
 Route::get('/profile/{user}' , [UserController::class , 'profilePosts']);
 Route::get('/profile/{user}/followers' , [UserController::class , 'profileFollowers']);

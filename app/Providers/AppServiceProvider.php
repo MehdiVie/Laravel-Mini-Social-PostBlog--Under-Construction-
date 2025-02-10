@@ -4,8 +4,9 @@ namespace App\Providers;
 
 use App\Models\Post;
 use App\Policies\PostPolicy;
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,5 +31,7 @@ class AppServiceProvider extends ServiceProvider
             
             return $user->isAdmin === 1; // Make sure 'isAdmin' is a property or column in your User model
         });
+
+        Paginator::useBootstrapFive();
     }
 }
