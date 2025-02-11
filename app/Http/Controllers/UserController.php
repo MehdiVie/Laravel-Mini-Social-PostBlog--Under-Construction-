@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OurEvent;
 use App\Models\User;
 use App\Models\Follow;
 use Illuminate\Support\Str;
@@ -96,13 +97,14 @@ class UserController extends Controller
 
 
     public function logout() {
-        Auth::logout();
+        //event(new OurEvent(['username'=>auth()->user()->username , 'action'=>'logout']));
+        auth()->logout();
         return redirect('/')->with('success', 'You are not logged out!');
         
     }
     
     public function showCorrectHomePage() {
-        if (Auth::check()) {
+        if (auth()->check()) {
             return view('homepage-feed' , 
             ['posts' => auth()->user()->feedPosts()->latest()->paginate(4)]
             );
@@ -123,6 +125,7 @@ class UserController extends Controller
             'password' => $incomingFields['loginpassword'] ,
             ])) {
             $request->session()->regenerate();
+            //event(new OurEvent(['username'=>auth()->user()->username , 'action'=>'login']));
             return redirect('/')->with(
                 'success' , 'You have successfully logged in');
         } else {
