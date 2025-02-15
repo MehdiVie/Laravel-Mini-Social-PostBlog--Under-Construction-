@@ -1,53 +1,47 @@
 <?php
-
 namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
-use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
-use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Foundation\Events\Dispatchable;
 
-class ChatMessage implements ShouldBroadcast
+class ChatMessage
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $chat;
+    public $chatData; // Declare this property to hold the data
 
     /**
      * Create a new event instance.
+     *
+     * @param  array  $chatData
+     * @return void
      */
-    /*
-    public function __construct($chat)
+    public function __construct($chatData)
     {
-        //
-        $this->chat = ['username' => $chat['username'] , 
-        'avatar' => $chat['avatar'] , 'textvalue' => $chat['textvalue']];
-    }*/
-    public function __construct($chat)
-    {
-        // Ensure all required keys exist in the $chat array
-        $this->chat = array_merge([
-            'username' => null,
-            'avatar' => null,
-            'textvalue' => null,
-        ], $chat);
+        $this->chatData = $chatData; // Assign the data to the public property
     }
-
 
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
+     * @return \Illuminate\Broadcasting\Channel|array
      */
     public function broadcastOn()
     {
-        \Log::info('Broadcasting event to chatchannel', ['chat' => $this->chat]);
         return new Channel('chatchannel');
     }
-    
 
+    /**
+     * Get the data to broadcast.
+     *
+     * @return array
+     */
+    public function broadcastWith()
+    {
+        return [
+            'chatData' => $this->chatData,  // Broadcast the chat data
+        ];
+    }
 }

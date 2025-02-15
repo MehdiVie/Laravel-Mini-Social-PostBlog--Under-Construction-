@@ -8,6 +8,8 @@ use Laravel\Scout\Searchable;
 class Post extends Model
 {
     //
+    protected $primaryKey = 'id';
+    //
     use Searchable;
     protected $fillable = [
         'title',

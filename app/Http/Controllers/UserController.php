@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\OurEvent;
+use App\Models\Post;
 use App\Models\User;
 use App\Models\Follow;
+use App\Events\OurEvent;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Intervention\Image\ImageManager;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
@@ -19,6 +21,7 @@ use Intervention\Image\Laravel\Facades\Image;
 
 class UserController extends Controller
 {
+    
     public function storeAvatar(Request $request) {
         $request->validate([
             'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:4096'
@@ -77,7 +80,16 @@ class UserController extends Controller
 
     }
 
+    public function profilePostsRaw(User $user) {
+
+        return response()->json(['theHTML'=>view('profile-posts-only' , ['posts' => $user->posts()->latest()->get()])->render(), 
+        'docTitle' => $user->username."'s Posts"]);
+        
+    }
+
     public function profileFollowers(User $user) {
+        
+        
         $this->getSharedData($user);
 
         return view('profile-followers', [
@@ -86,12 +98,28 @@ class UserController extends Controller
 
     }
 
+    public function profileFollowersRaw(User $user) {
+
+        return response()->json(['theHTML'=>view('profile-followers-only' , ['followers' => $user->followers()->latest()->get()])->render(), 
+        'docTitle' => $user->username."'s Followers" ]);
+        
+    }
+
     public function profileFollowing(User $user) {
+        
+        
         $this->getSharedData($user);
 
         return view('profile-following', [
             'followings' => $user->followingTheseUsers()->latest()->get()
             ]);
+
+    }
+
+    public function profileFollowingRaw(User $user) {
+        
+        return response()->json(['theHTML'=>view('profile-following-only' , ['followings' => $user->followingTheseUsers()->latest()->get()])
+        ->render(), 'docTitle' => "Who ".$user->username." Follows" ]);
 
     }
 
@@ -109,8 +137,27 @@ class UserController extends Controller
             ['posts' => auth()->user()->feedPosts()->latest()->paginate(4)]
             );
         } else {
-            return view('homepage');
+            $postCount = Cache::remember('postCount' , 20 , function() {
+                sleep(5);
+                return Post::count();
+            });
+            return view('homepage' , ['postCount' => $postCount]);
         }
+    }
+
+    public function loginApi(Request $request) {
+        $incomingFields = $request->validate([
+            'username' => 'required' , 
+            'password' => 'required'
+        ]);
+
+        if (auth()->attempt($incomingFields)) {
+            $user = User::where('username' , 
+            $incomingFields['username'])->first();
+            $token = $user->createToken('ourapptoken')->plainTextToken;
+            return $token;
+        }
+        return "Wrong";
     }
     
     //
@@ -120,7 +167,7 @@ class UserController extends Controller
             'loginpassword' => ['required']
         ]);
 
-        if (Auth::attempt ([
+        if (auth()->attempt ([
             'username' => $incomingFields['loginusername'] ,
             'password' => $incomingFields['loginpassword'] ,
             ])) {

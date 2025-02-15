@@ -5,8 +5,8 @@ body,
   -moz-osx-font-smoothing: grayscale !important;
 }
 
-.layout-height {
-  min-height: 600px;
+.layout-heigth {
+  height: 590px;
 }
 
 .header-bar {

@@ -24,3 +24,7 @@ Broadcast::channel('chatchannel' , function() {
     return false;
 });
 
+Broadcast::channel('profile-updates', function ($user) {
+    return true;  // Allow all users to listen
+});
+

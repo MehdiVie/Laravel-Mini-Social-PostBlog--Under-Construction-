@@ -15,13 +15,7 @@ use App\Http\Controllers\FollowController;
     }
     return 'You can not view this page.'; 
 });*/
-Route::get('/test-error', function () {
-    throw new Exception('Test Exception');
-});
 
-Route::get('/phpinfo', function () {
-    phpinfo();
-});
 
 
 Route::get('/admins-only', function() {
@@ -49,9 +43,20 @@ Route::put('/post/{post}', [PostController::class , "updatePost"])
 ->middleware('can:update,post');
 Route::get('/search/{term}' , [PostController::class , "search"] );
 
-Route::get('/profile/{user}' , [UserController::class , 'profilePosts']);
-Route::get('/profile/{user}/followers' , [UserController::class , 'profileFollowers']);
-Route::get('/profile/{user}/following' , [UserController::class , 'profileFollowing']);
+Route::get('/profile/{user:username}' , [UserController::class , 'profilePosts']);
+Route::get('/profile/{user:username}/followers' , [UserController::class , 'profileFollowers']);
+Route::get('/profile/{user:username}/following' , [UserController::class , 'profileFollowing']);
+
+Route::middleware('cache.headers:public;max_age=20;etag')->group(function() {
+
+    Route::get('/profile/{user:username}/raw' , [UserController::class , 'profilePostsRaw']);
+    Route::get('/profile/{user:username}/followers/raw' , [UserController::class , 'profileFollowersRaw']);
+    Route::get('/profile/{user:username}/following/raw' , [UserController::class , 'profileFollowingRaw']);
+
+});
+
+
+
 
 Route::post('/create-follow/{user:username}', [FollowController::class , 'createFollow'])->middleware('mustBeLoggedIn');
 Route::post('/remove-follow/{user:username}', [FollowController::class , 'removeFollow'])->middleware('mustBeLoggedIn');
@@ -94,6 +99,11 @@ Route::post('/send-chat-message', function (Request $request) {
         return response()->json(['error' => 'An internal server error occurred.'], 500);
     }
 })->middleware("mustBeLoggedIn");
+
+use App\Http\Controllers\ProfileController;
+
+Route::post('/profile/update', [ProfileController::class, 'update']);
+
 
 /*
 Route::get('/test-broadcast', function () {
@@ -150,5 +160,12 @@ Route::get('/debug-env-details', function () {
         'pusher_app_id' => config('broadcasting.connections.pusher.app_id'),
         'pusher_app_key' => config('broadcasting.connections.pusher.key'),
     ]);
+});
+Route::get('/test-error', function () {
+    throw new Exception('Test Exception');
+});
+
+Route::get('/phpinfo', function () {
+    phpinfo();
 });
 */
